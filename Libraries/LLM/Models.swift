@@ -101,11 +101,32 @@ public struct ModelConfiguration: Sendable {
 }
 
 extension ModelConfiguration {
+    
     public static let smolLM_135M_4bit = ModelConfiguration(
         id: "mlx-community/SmolLM-135M-Instruct-4bit",
         defaultPrompt: "Tell me about the history of Spain."
     )
+    
+    public static let smolLM_135M_fp16 = ModelConfiguration(
+        id: "mlx-community/SmolLM-135M-Instruct-fp16",
+        defaultPrompt: "Tell me about the history of Spain."
+    )
 
+    public static let smolLM2_135M_8bit = ModelConfiguration(
+        id: "mlx-community/SmolLM2-135M-Instruct-8bit",
+        defaultPrompt: "Tell me about the history of Spain."
+    )
+    
+    public static let smolLM2_360M = ModelConfiguration(
+        id: "mlx-community/SmolLM2-360M-Instruct",
+        defaultPrompt: "Tell me about the history of Spain."
+    )
+    
+    public static let smolLM2_1_7G = ModelConfiguration(
+        id: "mlx-community/SmolLM2-1.7B-Instruct",
+        defaultPrompt: "Tell me about the history of Spain."
+    )
+    
     public static let mistralNeMo4bit = ModelConfiguration(
         id: "mlx-community/Mistral-Nemo-Instruct-2407-4bit",
         defaultPrompt: "Explain quaternions."
@@ -227,6 +248,10 @@ extension ModelConfiguration {
                 phi4bit,
                 qwen205b4bit,
                 smolLM_135M_4bit,
+                smolLM_135M_fp16,
+                smolLM2_135M_8bit,
+                smolLM2_360M,
+                smolLM2_1_7G,
             ])
             bootstrapState = .bootstrapped
 
