@@ -216,6 +216,16 @@ extension ModelConfiguration {
         id: "mlx-community/Llama-3.2-3B-Instruct-4bit",
         defaultPrompt: "What is the difference between a fruit and a vegetable?"
     )
+    
+    public static let falcon3_1b_4bit = ModelConfiguration(
+        id: "smdesai/falcon3-1b-4bit",
+        defaultPrompt: "What is the difference between a fruit and a vegetable?"
+    )
+    
+    public static let exaone_3_5_2_4b_4bit = ModelConfiguration(
+        id: "mlx-community/EXAONE-3.5-2.4B-Instruct-4bit",
+        defaultPrompt: "What is the difference between a fruit and a vegetable?"
+    )
 
     private enum BootstrapState: Sendable {
         case idle
@@ -233,6 +243,8 @@ extension ModelConfiguration {
             bootstrapState = .bootstrapping
             register(configurations: [
                 codeLlama13b4bit,
+                exaone_3_5_2_4b_4bit,
+                falcon3_1b_4bit,
                 gemma2bQuantized,
                 gemma_2_2b_it_4bit,
                 gemma_2_9b_it_4bit,

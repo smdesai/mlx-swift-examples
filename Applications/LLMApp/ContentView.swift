@@ -73,7 +73,7 @@ struct ContentView: View {
         HStack {
             Picker("Model", selection: $modelName) {
                 ForEach(Array(ModelConfiguration.registry.keys.sorted()), id: \.self) { key in
-                    Text(key.replacingOccurrences(of: "mlx-community/", with: "")).tag(key)
+                    Text(key.components(separatedBy: "/").last ?? key).tag(key)
                 }
             }
             .onAppear {
@@ -398,7 +398,7 @@ class LLMEvaluator {
             {
                 [modelConfiguration] progress in
                 Task { @MainActor in
-                    let simpleName = modelConfiguration.name.replacingOccurrences(of: "mlx-community/", with: "")
+                    let simpleName = modelConfiguration.name.components(separatedBy: "/").last ?? modelConfiguration.name
                     self.modelInfo = "Downloading \(simpleName): \(Int(progress.fractionCompleted * 100))%"
                 }
             }
@@ -476,6 +476,7 @@ class LLMEvaluator {
 struct DirectoryItem: Identifiable, Hashable {
     let id = UUID()
     let name: String
+    let displayName: String
     let size: Int64  // Size in bytes
     
     func hash(into hasher: inout Hasher) {
@@ -496,7 +497,7 @@ struct DocumentsListView: View {
         List {
             ForEach(directories) { directory in
                 HStack {
-                    Text(directory.name)
+                    Text(directory.displayName)
                     Spacer()
                     Text(formatSize(directory.size))
                         .foregroundColor(.secondary)
@@ -565,20 +566,60 @@ struct DocumentsListView: View {
             return
         }
         
-        let modelsPathURL = documentsPath.appendingPathComponent("huggingface").appendingPathComponent("models").appendingPathComponent("mlx-community")
+//        let modelsPathURL = documentsPath.appendingPathComponent("huggingface").appendingPathComponent("models").appendingPathComponent("mlx-community")
+//        
+//        do {
+//            let contents = try FileManager.default.contentsOfDirectory(
+//                at: modelsPathURL,
+//                includingPropertiesForKeys: nil,
+//                options: [.skipsHiddenFiles]
+//            )
+//            directories = contents.map { url in
+//                let size = calculateDirectorySize(at: url)
+//                return DirectoryItem(name: url.lastPathComponent, size: size)
+//            }
+//        } catch {
+//            print("Error loading directories: \(error)")
+//        }
         
+        let modelsPathURL = documentsPath.appendingPathComponent("huggingface").appendingPathComponent("models")
+                
         do {
-            let contents = try FileManager.default.contentsOfDirectory(
+            // First get all organization directories under models
+            let orgDirectories = try FileManager.default.contentsOfDirectory(
                 at: modelsPathURL,
                 includingPropertiesForKeys: nil,
                 options: [.skipsHiddenFiles]
             )
-            directories = contents.map { url in
-                let size = calculateDirectorySize(at: url)
-                return DirectoryItem(name: url.lastPathComponent, size: size)
+            
+            var allModelDirectories: [DirectoryItem] = []
+            
+            for orgDir in orgDirectories {
+                do {
+                    let contents = try FileManager.default.contentsOfDirectory(
+                        at: orgDir,
+                        includingPropertiesForKeys: nil,
+                        options: [.skipsHiddenFiles]
+                    )
+                    
+                    // Create DirectoryItems for each model directory, including org prefix
+                    let orgDirItems = contents.map { url in
+                        let size = calculateDirectorySize(at: url)
+                        let orgName = orgDir.lastPathComponent
+                        let modelName = url.lastPathComponent
+                        return DirectoryItem(name: "\(orgName)/\(modelName)", displayName: "\(modelName)",  size: size)
+                    }
+                    
+                    allModelDirectories.append(contentsOf: orgDirItems)
+                } catch {
+                    print("Error loading directories for \(orgDir.lastPathComponent): \(error)")
+                }
             }
+            
+            directories = allModelDirectories
+            
         } catch {
-            print("Error loading directories: \(error)")
+            print("Error loading organization directories: \(error)")
         }
     }
     
@@ -590,7 +631,6 @@ struct DocumentsListView: View {
         let modelsPathURL = documentsPath
             .appendingPathComponent("huggingface")
             .appendingPathComponent("models")
-            .appendingPathComponent("mlx-community")
             .appendingPathComponent(directory)
         
         do {
